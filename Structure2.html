@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="uz" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puls Go - Dori yetkazib berish xizmati</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 50%, #ecfeff 100%);
+    }
+    
+    .card-shadow {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .step-card {
+      transition: all 0.3s ease;
+    }
+    
+    .step-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .slide-up {
+      animation: slideUp 0.4s ease forwards;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pulse-glow {
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      50% { box-shadow: 0 0 20px 10px rgba(34, 197, 94, 0.1); }
+    }
+    
+    .map-pattern {
+      background-image: 
+        linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    
+    .drag-area {
+      border: 2px dashed #94a3b8;
+      transition: all 0.3s ease;
+    }
+    
+    .drag-area.dragover {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+    
+    .progress-line {
+      background: linear-gradient(90deg, #22c55e var(--progress), #e2e8f0 var(--progress));
+    }
+
+    .pharmacy-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .pharmacy-card:hover {
+      transform: scale(1.02);
+    }
+
+    .pharmacy-card.selected {
+      border-color: #22c55e;
+      background: linear-gradient(135deg, #f0fdf4, #ecfeff);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .number-input {
+      -moz-appearance: textfield;
+    }
+    .number-input::-webkit-outer-spin-button,
+    .number-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gray-50">
+  <div id="app" class="h-full overflow-auto">
+   <!-- Navigation -->
+   <nav class="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+     <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+       <i data-lucide="plus" class="w-6 h-6 text-white"></i>
+      </div><span class="text-xl font-bold text-gray-800">Puls Go</span>
+     </div>
+     <div class="flex items-center gap-4">
+      <button onclick="navigateTo('home')" class="text-gray-600 hover:text-green-600 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-green-50">Bosh sahifa</button> <button onclick="navigateTo('order')" class="btn-primary text-white px-5 py-2.5 rounded-xl font-semibold">Buyurtma berish</button>
+     </div>
+    </div>
+   </nav><!-- HOME PAGE -->
+   <div id="home-page" class="page">
+    <!-- Hero Section -->
+    <section class="gradient-bg pt-28 pb-20 px-4">
+     <div class="max-w-5xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full mb-6 card-shadow">
+       <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> <span class="text-sm font-medium text-gray-600">Demo versiya</span>
+      </div>
+      <h1 id="hero-title" class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-800 leading-tight mb-6">Dorini izlashga vaqt ketkazmang — <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">Puls Go</span> siz uchun topadi</h1>
+      <p id="hero-subtitle" class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10">Retseptni yuklang, dorilarni tanlang va yetkazib berish narxini bir zumda hisoblang</p><button onclick="navigateTo('order')" class="btn-primary text-white px-10 py-4 rounded-2xl text-lg font-bold inline-flex items-center gap-3 pulse-glow"> <i data-lucide="shopping-bag" class="w-6 h-6"></i> Buyurtma berish <i data-lucide="arrow-right" class="w-5 h-5"></i> </button> <!-- Hero Image/Illustration -->
+      <div class="mt-16 relative">
+       <div class="bg-white rounded-3xl card-shadow p-8 max-w-3xl mx-auto">
+        <div class="grid grid-cols-3 gap-4">
+         <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 text-center">
+          <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+           <i data-lucide="file-image" class="w-8 h-8 text-blue-600"></i>
+          </div>
+          <p class="text-sm font-semibold text-gray-700">Retsept yuklash</p>
+         </div>
+         <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 text-center">
+          <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+           <i data-lucide="pill" class="w-8 h-8 text-green-600"></i>
+          </div>
+          <p class="text-sm font-semibold text-gray-700">Dori tanlash</p>
+         </div>
+         <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 text-center">
+          <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+           <i data-lucide="truck" class="w-8 h-8 text-purple-600"></i>
+          </div>
+          <p class="text-sm font-semibold text-gray-700">Yetkazib berish</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- How It Works Section -->
+    <section class="py-20 px-4 bg-white">
+     <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-16">
+       <span class="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">Qanday ishlaydi?</span>
+       <h2 class="text-3xl md:text-4xl font-bold text-gray-800">4 ta oddiy qadam</h2>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+       <!-- Step 1 -->
+       <div class="step-card bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-6 relative">
+        <div class="absolute -top-3 -left-3 w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+         1
+        </div>
+        <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 mt-2">
+         <i data-lucide="camera" class="w-7 h-7 text-blue-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 mb-2">Retsept yuklang</h3>
+        <p class="text-sm text-gray-600">Shifokor bergan retsept rasmini yuklang</p>
+       </div><!-- Step 2 -->
+       <div class="step-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-6 relative">
+        <div class="absolute -top-3 -left-3 w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+         2
+        </div>
+        <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-4 mt-2">
+         <i data-lucide="list-checks" class="w-7 h-7 text-green-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 mb-2">Miqdorni tanlang</h3>
+        <p class="text-sm text-gray-600">Har bir doridan nechta kerakligini belgilang</p>
+       </div><!-- Step 3 -->
+       <div class="step-card bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl p-6 relative">
+        <div class="absolute -top-3 -left-3 w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+         3
+        </div>
+        <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mb-4 mt-2">
+         <i data-lucide="map-pin" class="w-7 h-7 text-orange-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 mb-2">Lokatsiyani belgilang</h3>
+        <p class="text-sm text-gray-600">Yetkazib berish manzilingizni tanlang</p>
+       </div><!-- Step 4 -->
+       <div class="step-card bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-6 relative">
+        <div class="absolute -top-3 -left-3 w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+         4
+        </div>
+        <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-4 mt-2">
+         <i data-lucide="store" class="w-7 h-7 text-purple-600"></i>
+        </div>
+        <h3 class="font-bold text-gray-800 mb-2">Dorixonani tanlang</h3>
+        <p class="text-sm text-gray-600">Eng yaqin va qulay dorixonani tanlang</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- Pricing Section -->
+    <section class="py-20 px-4 gradient-bg">
+     <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-3xl card-shadow p-8 md:p-12">
+       <div class="flex flex-col md:flex-row items-center gap-8">
+        <div class="flex-1">
+         <span class="inline-block bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">Yetkazib berish narxi</span>
+         <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Har <span class="text-green-500">1 km</span> uchun</h2>
+         <div class="flex items-baseline gap-2">
+          <span id="delivery-price-display" class="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">1 500</span> <span class="text-2xl text-gray-600 font-semibold">so'm</span>
+         </div>
+         <p class="text-gray-500 mt-4">Shaffof narxlar — yashirin to'lovlarsiz</p>
+        </div>
+        <div class="flex-shrink-0">
+         <div class="w-40 h-40 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center">
+          <div class="w-28 h-28 bg-gradient-to-br from-green-200 to-emerald-200 rounded-full flex items-center justify-center">
+           <i data-lucide="bike" class="w-14 h-14 text-green-600"></i>
+          </div>
+         </div>
+        </div>
+       </div><!-- Price Calculator Preview -->
+       <div class="mt-10 pt-8 border-t border-gray-100">
+        <h3 class="font-semibold text-gray-700 mb-4">Misol:</h3>
+        <div class="grid grid-cols-3 gap-4 text-center">
+         <div class="bg-gray-50 rounded-2xl p-4">
+          <p class="text-sm text-gray-500 mb-1">Masofa</p>
+          <p class="text-2xl font-bold text-gray-800">3 km</p>
+         </div>
+         <div class="bg-gray-50 rounded-2xl p-4">
+          <p class="text-sm text-gray-500 mb-1">Yetkazib berish</p>
+          <p class="text-2xl font-bold text-blue-600">4 500 so'm</p>
+         </div>
+         <div class="bg-green-50 rounded-2xl p-4">
+          <p class="text-sm text-gray-500 mb-1">Formulasi</p>
+          <p class="text-lg font-bold text-green-600">3 × 1500</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Demo Notice -->
+    <section class="py-12 px-4 bg-amber-50 border-y border-amber-100">
+     <div class="max-w-4xl mx-auto flex items-center gap-4 justify-center">
+      <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+       <i data-lucide="info" class="w-6 h-6 text-amber-600"></i>
+      </div>
+      <p class="text-amber-800"><strong>Eslatma:</strong> Bu demo versiya bo'lib, tizim ishlash prinsipini ko'rsatadi. Haqiqiy buyurtmalar qabul qilinmaydi.</p>
+     </div>
+    </section><!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 px-4">
+     <div class="max-w-5xl mx-auto">
+      <div class="grid md:grid-cols-3 gap-8 mb-8">
+       <div>
+        <div class="flex items-center gap-2 mb-4">
+         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+          <i data-lucide="plus" class="w-6 h-6 text-white"></i>
+         </div><span class="text-xl font-bold">Puls Go</span>
+        </div>
+        <p class="text-gray-400 text-sm">Dori yetkazib berish xizmati — tez, qulay va ishonchli</p>
+       </div>
+       <div>
+        <h4 class="font-semibold mb-4">Telegram Bot</h4>
+        <div class="flex items-center gap-3 bg-gray-800 rounded-xl p-4">
+         <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+          <i data-lucide="send" class="w-5 h-5 text-white"></i>
+         </div>
+         <div>
+          <p class="text-sm font-medium">@PlusGoBot</p>
+          <p class="text-xs text-gray-400">Tez orada ishga tushadi</p>
+         </div>
+        </div>
+       </div>
+       <div>
+        <h4 class="font-semibold mb-4">Kontaktlar</h4>
+        <div class="space-y-3">
+         <div class="flex items-center gap-3 text-gray-400 text-sm">
+          <i data-lucide="phone" class="w-4 h-4"></i> <span>+998 90 123 45 67</span>
+         </div>
+         <div class="flex items-center gap-3 text-gray-400 text-sm">
+          <i data-lucide="mail" class="w-4 h-4"></i> <span>info@plusgo.uz</span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="border-t border-gray-800 pt-8 text-center">
+       <p class="text-gray-500 text-sm">Puls Go – demo startup loyiha © 2024</p>
+      </div>
+     </div>
+    </footer>
+   </div><!-- ORDER PAGE -->
+   <div id="order-page" class="page hidden pt-20 pb-12">
+    <div class="max-w-4xl mx-auto px-4">
+     <!-- Progress Bar -->
+     <div class="bg-white rounded-2xl card-shadow p-6 mb-8">
+      <div class="flex items-center justify-between mb-4">
+       <h2 class="font-bold text-gray-800">Buyurtma berish</h2><span id="step-indicator" class="text-sm text-gray-500">Qadam 1 / 7</span>
+      </div>
+      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+       <div id="progress-bar" class="h-full bg-gradient-to-r from-green-500 to-emerald-600 rounded-full transition-all duration-500" style="width: 14.28%"></div>
+      </div>
+      <div class="flex justify-between mt-3">
+       <span class="text-xs text-gray-400">Retsept</span> <span class="text-xs text-gray-400">Dorilar</span> <span class="text-xs text-gray-400">Lokatsiya</span> <span class="text-xs text-gray-400">Dorixonalar</span> <span class="text-xs text-gray-400">Tanlash</span> <span class="text-xs text-gray-400">Hisob</span> <span class="text-xs text-gray-400">Tasdiqlash</span>
+      </div>
+     </div><!-- Step Content Container -->
+     <div id="step-content" class="bg-white rounded-3xl card-shadow p-8">
+      <!-- Steps will be rendered here -->
+     </div><!-- Navigation Buttons -->
+     <div class="flex justify-between mt-6">
+      <button id="prev-btn" onclick="prevStep()" class="hidden px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center gap-2"> <i data-lucide="arrow-left" class="w-5 h-5"></i> Orqaga </button>
+      <div class="flex-1"></div><button id="next-btn" onclick="nextStep()" class="btn-primary text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2" disabled> Keyingisi <i data-lucide="arrow-right" class="w-5 h-5"></i> </button>
+     </div>
+    </div>
+   </div><!-- Success Modal -->
+   <div id="success-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl card-shadow p-8 max-w-md w-full text-center slide-up">
+     <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+      <i data-lucide="check-circle" class="w-10 h-10 text-green-600"></i>
+     </div>
+     <h2 class="text-2xl font-bold text-gray-800 mb-4">Buyurtma qabul qilindi!</h2>
+     <p class="text-gray-600 mb-6">Bu demo versiya. Haqiqiy buyurtmalar uchun Telegram botimizdan foydalaning.</p>
+     <div class="bg-gray-50 rounded-2xl p-4 mb-6">
+      <p class="text-sm text-gray-500 mb-1">Buyurtma raqami</p>
+      <p class="text-xl font-bold text-gray-800">#PG-<span id="order-number"></span></p>
+     </div><button onclick="closeModal()" class="btn-primary text-white px-8 py-3 rounded-xl font-semibold w-full"> Bosh sahifaga qaytish </button>
+    </div>
+   </div>
+  </div>
+  <script>
+    // Configuration
+    const defaultConfig = {
+      hero_title: "Dorini izlashga vaqt ketkazmang — Puls Go siz uchun topadi",
+      hero_subtitle: "Retseptni yuklang, dorilarni tanlang va yetkazib berish narxini bir zumda hisoblang",
+      delivery_price: "1500",
+      primary_color: "#22c55e",
+      secondary_color: "#0ea5e9",
+      background_color: "#f8fafc",
+      text_color: "#1f2937",
+      accent_color: "#f59e0b"
+    };
+
+    let config = { ...defaultConfig };
+
+    // State
+    let currentPage = 'home';
+    let currentStep = 1;
+    let orderData = {
+      prescriptionUploaded: false,
+      medicines: [],
+      location: null,
+      pharmacies: [],
+      selectedPharmacy: null,
+      distance: 0,
+      deliveryPrice: 0,
+      totalPrice: 0
+    };
+
+    // Demo medicines data
+    const demoMedicines = [
+      { id: 1, name: "Paracetamol 500mg", price: 15000, quantity: 0 },
+      { id: 2, name: "Amoxicillin 250mg", price: 35000, quantity: 0 },
+      { id: 3, name: "Ibuprofen 400mg", price: 22000, quantity: 0 },
+      { id: 4, name: "Vitamin C 1000mg", price: 45000, quantity: 0 },
+      { id: 5, name: "Omeprazol 20mg", price: 28000, quantity: 0 }
+    ];
+
+    // Demo pharmacies
+    const demoPharmacies = [
+      { id: 1, name: "Apteka Salomatlik", district: "Chilonzor tumani", distance: 1.2, rating: 4.8 },
+      { id: 2, name: "Dori Olami", district: "Yunusobod tumani", distance: 2.5, rating: 4.5 },
+      { id: 3, name: "Apteka Plus", district: "Mirzo Ulug'bek tumani", distance: 3.8, rating: 4.9 }
+    ];
+
+    // Initialize
+    function init() {
+      lucide.createIcons();
+      renderPage();
+    }
+
+    // Navigation
+    function navigateTo(page) {
+      currentPage = page;
+      if (page === 'order') {
+        currentStep = 1;
+        resetOrder();
+      }
+      renderPage();
+    }
+
+    function renderPage() {
+      document.getElementById('home-page').classList.toggle('hidden', currentPage !== 'home');
+      document.getElementById('order-page').classList.toggle('hidden', currentPage !== 'order');
+      
+      if (currentPage === 'order') {
+        renderStep();
+      }
+      
+      lucide.createIcons();
+      window.scrollTo(0, 0);
+    }
+
+    // Order Flow
+    function resetOrder() {
+      orderData = {
+        prescriptionUploaded: false,
+        medicines: demoMedicines.map(m => ({ ...m, quantity: 0 })),
+        location: null,
+        pharmacies: [...demoPharmacies],
+        selectedPharmacy: null,
+        distance: 0,
+        deliveryPrice: 0,
+        totalPrice: 0
+      };
+    }
+
+    function renderStep() {
+      const content = document.getElementById('step-content');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const progressBar = document.getElementById('progress-bar');
+      const stepIndicator = document.getElementById('step-indicator');
+      
+      stepIndicator.textContent = `Qadam ${currentStep} / 7`;
+      progressBar.style.width = `${(currentStep / 7) * 100}%`;
+      
+      prevBtn.classList.toggle('hidden', currentStep === 1);
+      
+      content.innerHTML = getStepContent();
+      content.classList.remove('slide-up');
+      void content.offsetWidth;
+      content.classList.add('slide-up');
+      
+      updateNextButton();
+      lucide.createIcons();
+    }
+
+    function getStepContent() {
+      switch(currentStep) {
+        case 1: return getStep1Content();
+        case 2: return getStep2Content();
+        case 3: return getStep3Content();
+        case 4: return getStep4Content();
+        case 5: return getStep5Content();
+        case 6: return getStep6Content();
+        case 7: return getStep7Content();
+        default: return '';
+      }
+    }
+
+    // Step 1: Upload Prescription
+    function getStep1Content() {
+      return `
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="file-image" class="w-8 h-8 text-blue-600"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Retsept rasmini yuklang</h3>
+          <p class="text-gray-500 mb-8">Shifokor bergan retsept rasmini yuklang yoki suratga oling</p>
+          
+          <div id="upload-area" class="drag-area rounded-3xl p-12 cursor-pointer hover:border-green-400 hover:bg-green-50/50 transition-all" onclick="simulateUpload()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            ${orderData.prescriptionUploaded ? `
+              <div class="text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <i data-lucide="check" class="w-10 h-10 text-green-600"></i>
+                </div>
+                <p class="font-semibold text-green-700 mb-2">Retsept yuklandi!</p>
+                <p class="text-sm text-gray-500">retsept_001.jpg</p>
+              </div>
+            ` : `
+              <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="upload-cloud" class="w-10 h-10 text-gray-400"></i>
+              </div>
+              <p class="font-semibold text-gray-700 mb-2">Rasmni bu yerga tashlang</p>
+              <p class="text-sm text-gray-500 mb-4">yoki</p>
+              <span class="inline-block bg-green-100 text-green-700 px-6 py-2 rounded-xl font-medium">Faylni tanlang</span>
+            `}
+          </div>
+          
+          <p class="text-xs text-gray-400 mt-4">Qo'llab-quvvatlanadigan formatlar: JPG, PNG, PDF</p>
+        </div>
+      `;
+    }
+
+    function simulateUpload() {
+      if (!orderData.prescriptionUploaded) {
+        orderData.prescriptionUploaded = true;
+        renderStep();
+      }
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      simulateUpload();
+    }
+
+    // Step 2: Select Medicines
+    function getStep2Content() {
+      const medicineItems = orderData.medicines.map(med => `
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <i data-lucide="pill" class="w-6 h-6 text-green-600"></i>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800">${med.name}</p>
+              <p class="text-sm text-green-600 font-medium">${formatPrice(med.price)} so'm</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="updateQuantity(${med.id}, -1)" class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
+              <i data-lucide="minus" class="w-4 h-4 text-gray-600"></i>
+            </button>
+            <input type="number" value="${med.quantity}" onchange="setQuantity(${med.id}, this.value)" class="number-input w-16 h-10 text-center border border-gray-200 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            <button onclick="updateQuantity(${med.id}, 1)" class="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors">
+              <i data-lucide="plus" class="w-4 h-4 text-white"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      const totalMedicines = orderData.medicines.reduce((sum, m) => sum + m.quantity, 0);
+      const totalMedicinePrice = orderData.medicines.reduce((sum, m) => sum + (m.quantity * m.price), 0);
+
+      return `
+        <div>
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
+              <i data-lucide="list-checks" class="w-8 h-8 text-green-600"></i>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-800">Dorilarni tanlang</h3>
+              <p class="text-gray-500">Retseptingizda topilgan dorilar</p>
+            </div>
+          </div>
+          
+          <div class="space-y-3 mb-6">
+            ${medicineItems}
+          </div>
+          
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Jami tanlangan</p>
+              <p class="font-bold text-gray-800">${totalMedicines} ta dori</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-500">Umumiy narx</p>
+              <p class="text-xl font-bold text-green-600">${formatPrice(totalMedicinePrice)} so'm</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateQuantity(id, change) {
+      const med = orderData.medicines.find(m => m.id === id);
+      if (med) {
+        med.quantity = Math.max(0, med.quantity + change);
+        renderStep();
+      }
+    }
+
+    function setQuantity(id, value) {
+      const med = orderData.medicines.find(m => m.id === id);
+      if (med) {
+        med.quantity = Math.max(0, parseInt(value) || 0);
+        renderStep();
+      }
+    }
+
+    // Step 3: Location Selection
+    function getStep3Content() {
+      return `
+        <div class="text-center">
+          <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="map-pin" class="w-8 h-8 text-orange-600"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Lokatsiyangizni belgilang</h3>
+          <p class="text-gray-500 mb-8">Yetkazib berish manzilingizni tanlang</p>
+          
+          <!-- Map Style UI -->
+          <div class="relative rounded-3xl overflow-hidden border border-gray-200">
+            <div class="map-pattern bg-gradient-to-br from-blue-50 via-green-50 to-cyan-50 h-64 relative">
+              <!-- Map Elements -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                ${orderData.location ? `
+                  <div class="relative">
+                    <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                      <i data-lucide="map-pin" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-500 rotate-45 -z-10"></div>
+                  </div>
+                ` : `
+                  <div class="text-center">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg mb-2 mx-auto">
+                      <i data-lucide="target" class="w-8 h-8 text-gray-400"></i>
+                    </div>
+                    <p class="text-sm text-gray-500">Xaritada tanlang</p>
+                  </div>
+                `}
+              </div>
+              
+              <!-- Map Streets (decorative) -->
+              <div class="absolute top-1/4 left-0 right-0 h-0.5 bg-white/60"></div>
+              <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-white/60"></div>
+              <div class="absolute top-3/4 left-0 right-0 h-0.5 bg-white/60"></div>
+              <div class="absolute top-0 bottom-0 left-1/4 w-0.5 bg-white/60"></div>
+              <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/60"></div>
+              <div class="absolute top-0 bottom-0 left-3/4 w-0.5 bg-white/60"></div>
+            </div>
+          </div>
+          
+          <button onclick="selectLocation()" class="mt-6 ${orderData.location ? 'bg-green-100 text-green-700' : 'btn-primary text-white'} px-8 py-3 rounded-xl font-semibold inline-flex items-center gap-2">
+            ${orderData.location ? `
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              Lokatsiya tanlandi
+            ` : `
+              <i data-lucide="crosshair" class="w-5 h-5"></i>
+              Lokatsiyani tanlash
+            `}
+          </button>
+          
+          ${orderData.location ? `
+            <div class="mt-4 bg-gray-50 rounded-xl p-4 inline-flex items-center gap-3">
+              <i data-lucide="map-pin" class="w-5 h-5 text-gray-400"></i>
+              <span class="text-gray-600">Toshkent, Chilonzor tumani</span>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function selectLocation() {
+      orderData.location = { lat: 41.311081, lng: 69.240562, address: "Toshkent, Chilonzor tumani" };
+      renderStep();
+    }
+
+    // Step 4: Show Pharmacies
+    function getStep4Content() {
+      const medicineTotal = orderData.medicines.reduce((sum, m) => sum + (m.quantity * m.price), 0);
+      
+      const pharmacyCards = orderData.pharmacies.map(ph => `
+        <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100 hover:border-green-200 transition-all">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <i data-lucide="store" class="w-6 h-6 text-purple-600"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-gray-800">${ph.name}</h4>
+                <p class="text-sm text-gray-500">${ph.district}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 bg-amber-100 px-2 py-1 rounded-lg">
+              <i data-lucide="star" class="w-4 h-4 text-amber-500 fill-amber-500"></i>
+              <span class="text-sm font-semibold text-amber-700">${ph.rating}</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-blue-50 rounded-xl p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Masofa</p>
+              <p class="font-bold text-blue-600">${ph.distance} km</p>
+            </div>
+            <div class="bg-green-50 rounded-xl p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Dorilar narxi</p>
+              <p class="font-bold text-green-600">${formatPrice(medicineTotal)} so'm</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div>
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center">
+              <i data-lucide="store" class="w-8 h-8 text-purple-600"></i>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-800">Yaqin dorixonalar</h3>
+              <p class="text-gray-500">Sizga eng yaqin dorixonalar ro'yxati</p>
+            </div>
+          </div>
+          
+          <div class="grid gap-4">
+            ${pharmacyCards}
+          </div>
+          
+          <div class="mt-6 bg-blue-50 rounded-xl p-4 flex items-center gap-3">
+            <i data-lucide="info" class="w-5 h-5 text-blue-500 flex-shrink-0"></i>
+            <p class="text-sm text-blue-700">Keyingi qadamda dorixonani tanlashingiz mumkin</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Step 5: Select Pharmacy
+    function getStep5Content() {
+      const medicineTotal = orderData.medicines.reduce((sum, m) => sum + (m.quantity * m.price), 0);
+      const deliveryPrice = parseInt(config.delivery_price) || 1500;
+      
+      const pharmacyCards = orderData.pharmacies.map(ph => {
+        const isSelected = orderData.selectedPharmacy?.id === ph.id;
+        const phDeliveryPrice = Math.round(ph.distance * deliveryPrice);
+        const phTotalPrice = medicineTotal + phDeliveryPrice;
+        
+        return `
+          <div onclick="selectPharmacy(${ph.id})" class="pharmacy-card rounded-2xl p-5 border-2 ${isSelected ? 'selected border-green-500' : 'border-gray-100 hover:border-green-200'}">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 ${isSelected ? 'bg-green-500' : 'bg-purple-100'} rounded-xl flex items-center justify-center">
+                  ${isSelected ? 
+                    '<i data-lucide="check" class="w-6 h-6 text-white"></i>' : 
+                    '<i data-lucide="store" class="w-6 h-6 text-purple-600"></i>'
+                  }
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-800">${ph.name}</h4>
+                  <p class="text-sm text-gray-500">${ph.district}</p>
+                </div>
+              </div>
+              ${isSelected ? '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">Tanlandi</span>' : ''}
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-400 mb-1">Masofa</p>
+                <p class="font-bold text-gray-700">${ph.distance} km</p>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-400 mb-1">Yetkazish</p>
+                <p class="font-bold text-blue-600">${formatPrice(phDeliveryPrice)}</p>
+              </div>
+              <div class="bg-green-50 rounded-xl p-3 text-center">
+                <p class="text-xs text-gray-400 mb-1">Jami</p>
+                <p class="font-bold text-green-600">${formatPrice(phTotalPrice)}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div>
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
+              <i data-lucide="check-circle" class="w-8 h-8 text-green-600"></i>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-800">Dorixonani tanlang</h3>
+              <p class="text-gray-500">Buyurtmangiz uchun dorixonani tanlang</p>
+            </div>
+          </div>
+          
+          <div class="grid gap-4">
+            ${pharmacyCards}
+          </div>
+        </div>
+      `;
+    }
+
+    function selectPharmacy(id) {
+      const ph = orderData.pharmacies.find(p => p.id === id);
+      if (ph) {
+        orderData.selectedPharmacy = ph;
+        orderData.distance = ph.distance;
+        const deliveryPrice = parseInt(config.delivery_price) || 1500;
+        orderData.deliveryPrice = Math.round(ph.distance * deliveryPrice);
+        const medicineTotal = orderData.medicines.reduce((sum, m) => sum + (m.quantity * m.price), 0);
+        orderData.totalPrice = medicineTotal + orderData.deliveryPrice;
+        renderStep();
+      }
+    }
+
+    // Step 6: Delivery Calculation
+    function getStep6Content() {
+      const medicineTotal = orderData.medicines.reduce((sum, m) => sum + (m.quantity * m.price), 0);
+      const deliveryPrice = parseInt(config.delivery_price) || 1500;
+      const selectedMedicines = orderData.medicines.filter(m => m.quantity > 0);
+
+      return `
+        <div>
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center">
+              <i data-lucide="calculator" class="w-8 h-8 text-blue-600"></i>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold text-gray-800">Narx hisobi</h3>
+              <p class="text-gray-500">Buyurtmangiz uchun to'lov hisobi</p>
+            </div>
+          </div>
+          
+          <!-- Pharmacy Info -->
+          <div class="bg-purple-50 rounded-2xl p-4 mb-6 flex items-center gap-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+              <i data-lucide="store" class="w-6 h-6 text-purple-600"></i>
+            </div>
+            <div>
+              <p class="font-bold text-gray-800">${orderData.selectedPharmacy?.name}</p>
+              <p class="text-sm text-gray-500">${orderData.selectedPharmacy?.district}</p>
+            </div>
+          </div>
+          
+          <!-- Selected Medicines -->
+          <div class="mb-6">
+            <h4 class="font-semibold text-gray-700 mb-3">Tanlangan dorilar:</h4>
+            <div class="space-y-2">
+              ${selectedMedicines.map(m => `
+                <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                  <span class="text-gray-600">${m.name} × ${m.quantity}</span>
+                  <span class="font-medium text-gray-800">${formatPrice(m.quantity * m.price)} so'm</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <!-- Calculation Breakdown -->
+          <div class="bg-gray-50 rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-600">Dorilar narxi:</span>
+              <span class="font-semibold text-gray-800">${formatPrice(medicineTotal)} so'm</span>
+            </div>
+            <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+              <div class="flex items-center gap-2">
+                <span class="text-gray-600">Yetkazib berish:</span>
+                <span class="text-sm text-gray-400">(${orderData.distance} km × ${formatPrice(deliveryPrice)} so'm)</span>
+              </div>
+              <span class="font-semibold text-blue-600">${formatPrice(orderData.deliveryPrice)} so'm</span>
+            </div>
+            <div class="flex items-center justify-between pt-2">
+              <span class="text-lg font-bold text-gray-800">Jami to'lov:</span>
+              <span class="text-2xl font-bold text-green-600">${formatPrice(orderData.totalPrice)} so'm</span>
+            </div>
+          </div>
+          
+          <!-- Distance Visual -->
+          <div class="mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <i data-lucide="map-pin" class="w-5 h-5 text-green-600"></i>
+                </div>
+                <span class="text-sm text-gray-600">Sizning manzil</span>
+              </div>
+              <div class="flex-1 mx-4 h-0.5 bg-gradient-to-r from-green-300 to-blue-300 relative">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 py-1 rounded-full text-xs font-semibold text-gray-600 shadow">
+                  ${orderData.distance} km
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-600">Dorixona</span>
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i data-lucide="store" class="w-5 h-5 text-blue-600"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Step 7: Confirmation
+    function getStep7Content() {
+      const medicineTotal = orderData.medicines.reduce((sum, m) => sum + (m.quantity * m.price), 0);
+      const selectedMedicines = orderData.medicines.filter(m => m.quantity > 0);
+
+      return `
+        <div class="text-center">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="clipboard-check" class="w-10 h-10 text-green-600"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">Buyurtmani tasdiqlang</h3>
+          <p class="text-gray-500 mb-8">Barcha ma'lumotlarni tekshiring va tasdiqlang</p>
+          
+          <!-- Order Summary -->
+          <div class="bg-gray-50 rounded-2xl p-6 text-left mb-6">
+            <div class="grid gap-4">
+              <div class="flex items-start gap-4 pb-4 border-b border-gray-200">
+                <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="store" class="w-5 h-5 text-purple-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Dorixona</p>
+                  <p class="font-semibold text-gray-800">${orderData.selectedPharmacy?.name}</p>
+                  <p class="text-sm text-gray-500">${orderData.selectedPharmacy?.district}</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-4 pb-4 border-b border-gray-200">
+                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="pill" class="w-5 h-5 text-green-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Dorilar (${selectedMedicines.length} ta)</p>
+                  <p class="font-semibold text-gray-800">${formatPrice(medicineTotal)} so'm</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-4 pb-4 border-b border-gray-200">
+                <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="truck" class="w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Yetkazib berish (${orderData.distance} km)</p>
+                  <p class="font-semibold text-gray-800">${formatPrice(orderData.deliveryPrice)} so'm</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between pt-2">
+                <span class="text-lg font-bold text-gray-800">Jami:</span>
+                <span class="text-2xl font-bold text-green-600">${formatPrice(orderData.totalPrice)} so'm</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Demo Notice -->
+          <div class="bg-amber-50 rounded-xl p-4 flex items-center gap-3 mb-6">
+            <i data-lucide="info" class="w-5 h-5 text-amber-500 flex-shrink-0"></i>
+            <p class="text-sm text-amber-700 text-left">Bu demo versiya. Haqiqiy buyurtmalar qabul qilinmaydi.</p>
+          </div>
+          
+          <button onclick="confirmOrder()" class="btn-primary text-white px-10 py-4 rounded-2xl text-lg font-bold w-full flex items-center justify-center gap-3">
+            <i data-lucide="check-circle" class="w-6 h-6"></i>
+            Buyurtmani tasdiqlash
+          </button>
+        </div>
+      `;
+    }
+
+    function confirmOrder() {
+      document.getElementById('order-number').textContent = Math.floor(100000 + Math.random() * 900000);
+      document.getElementById('success-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('success-modal').classList.add('hidden');
+      navigateTo('home');
+    }
+
+    // Navigation
+    function updateNextButton() {
+      const nextBtn = document.getElementById('next-btn');
+      let canProceed = false;
+
+      switch(currentStep) {
+        case 1:
+          canProceed = orderData.prescriptionUploaded;
+          break;
+        case 2:
+          canProceed = orderData.medicines.some(m => m.quantity > 0);
+          break;
+        case 3:
+          canProceed = orderData.location !== null;
+          break;
+        case 4:
+          canProceed = true;
+          break;
+        case 5:
+          canProceed = orderData.selectedPharmacy !== null;
+          break;
+        case 6:
+          canProceed = true;
+          break;
+        case 7:
+          nextBtn.classList.add('hidden');
+          return;
+      }
+
+      nextBtn.disabled = !canProceed;
+      nextBtn.classList.remove('hidden');
+    }
+
+    function nextStep() {
+      if (currentStep < 7) {
+        currentStep++;
+        renderStep();
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        renderStep();
+      }
+    }
+
+    // Utility
+    function formatPrice(price) {
+      return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+
+    // SDK Integration
+    async function onConfigChange(newConfig) {
+      config = { ...defaultConfig, ...newConfig };
+      
+      const heroTitle = document.getElementById('hero-title');
+      if (heroTitle) {
+        heroTitle.innerHTML = `${config.hero_title.replace('Plus Go', '<span class="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">Plus Go</span>')}`;
+      }
+      
+      const heroSubtitle = document.getElementById('hero-subtitle');
+      if (heroSubtitle) {
+        heroSubtitle.textContent = config.hero_subtitle;
+      }
+      
+      const deliveryPriceDisplay = document.getElementById('delivery-price-display');
+      if (deliveryPriceDisplay) {
+        deliveryPriceDisplay.textContent = formatPrice(parseInt(config.delivery_price) || 1500);
+      }
+      
+      if (currentPage === 'order' && currentStep >= 5) {
+        renderStep();
+      }
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.primary_color || defaultConfig.primary_color,
+            set: (value) => {
+              cfg.primary_color = value;
+              window.elementSdk.setConfig({ primary_color: value });
+            }
+          },
+          {
+            get: () => cfg.secondary_color || defaultConfig.secondary_color,
+            set: (value) => {
+              cfg.secondary_color = value;
+              window.elementSdk.setConfig({ secondary_color: value });
+            }
+          },
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (value) => {
+              cfg.background_color = value;
+              window.elementSdk.setConfig({ background_color: value });
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ["hero_title", cfg.hero_title || defaultConfig.hero_title],
+        ["hero_subtitle", cfg.hero_subtitle || defaultConfig.hero_subtitle],
+        ["delivery_price", cfg.delivery_price || defaultConfig.delivery_price]
+      ]);
+    }
+
+    // Initialize
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e476f2634366ae9',t:'MTc3NDg3NzA2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
